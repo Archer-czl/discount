@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>折扣计算器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f8f8;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        #products, #results {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        .product-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .product-item input {
+            margin-left: 10px;
+            padding: 5px;
+            width: 100px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .product-item button {
+            margin-left: 10px;
+            padding: 5px 10px;
+            border: none;
+            background-color: #e74c3c;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button.add, button.calculate {
+            display: block;
+            width: calc(100% - 40px);
+            max-width: 600px;
+            margin: 10px auto;
+            padding: 10px;
+            border: none;
+            background-color: #2ecc71;
+            color: #fff;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button.calculate {
+            background-color: #3498db;
+        }
+        #results {
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h1>折扣计算器</h1>
+    <div id="products"></div>
+    <button class="add" onclick="addProduct()">增加商品</button>
+    <button class="calculate" onclick="calculate()">计算</button>
+    <div id="results"></div>
+
+    <script>
+        let productId = 0;
+
+        function addProduct() {
+            productId++;
+            const productDiv = document.createElement('div');
+            productDiv.classList.add('product-item');
+            productDiv.id = `product-${productId}`;
+            productDiv.innerHTML = `
+                商品${productId} 价格: <input type="number" id="price-${productId}" min="0" step="0.01"> 
+                <button onclick="removeProduct(${productId})">删除</button>
+            `;
+            document.getElementById('products').appendChild(productDiv);
+        }
+
+        function removeProduct(id) {
+            const productDiv = document.getElementById(`product-${id}`);
+            document.getElementById('products').removeChild(productDiv);
+        }
+
+        function calculate() {
+            const productDivs = document.getElementsByClassName('product-item');
+            let originalTotal = 0;
+            const prices = [];
+
+            for (let i = 0; i < productDivs.length; i++) {
+                const id = productDivs[i].id.split('-')[1];
+                const price = parseFloat(document.getElementById(`price-${id}`).value);
+
+                if (!isNaN(price)) {
+                    originalTotal += price;
+                    prices.push(price);
+                }
+            }
+
+            let discount = 1;
+            let discountText = '无折扣';
+            if (prices.length == 2) {
+                discount = 0.7;
+                discountText = '7折';
+            } else if (prices.length == 3) {
+                discount = 0.6;
+                discountText = '6折';
+            } else if (prices.length >= 4) {
+                discount = 0.55;
+                discountText = '五五折';
+            }
+
+            const discountedPrices = prices.map(price => price * discount);
+            const discountedTotal = discountedPrices.reduce((sum, price) => sum + price, 0);
+
+            let resultHTML = `
+                商品原价: ${originalTotal.toFixed(2)}<br>
+                折后总价: ${discountedTotal.toFixed(2)}<br>
+                当前折扣: ${discountText}<br>
+                每件商品折后价格:<br>
+            `;
+            discountedPrices.forEach((price, index) => {
+                resultHTML += `商品${index + 1}: ${price.toFixed(2)}<br>`;
+            });
+
+            document.getElementById('results').innerHTML = resultHTML;
+        }
+    </script>
+</body>
+</html>
