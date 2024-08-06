@@ -73,10 +73,9 @@
     <div id="results"></div>
 
     <script>
-        let productId = 0;
-
         function addProduct() {
-            productId++;
+            const productDivs = document.getElementsByClassName('product-item');
+            const productId = productDivs.length + 1;
             const productDiv = document.createElement('div');
             productDiv.classList.add('product-item');
             productDiv.id = `product-${productId}`;
@@ -85,11 +84,24 @@
                 <button onclick="removeProduct(${productId})">删除</button>
             `;
             document.getElementById('products').appendChild(productDiv);
+            updateProductNumbers();
         }
 
         function removeProduct(id) {
             const productDiv = document.getElementById(`product-${id}`);
             document.getElementById('products').removeChild(productDiv);
+            updateProductNumbers();
+        }
+
+        function updateProductNumbers() {
+            const productDivs = document.getElementsByClassName('product-item');
+            for (let i = 0; i < productDivs.length; i++) {
+                const id = i + 1;
+                productDivs[i].id = `product-${id}`;
+                productDivs[i].querySelector('input').id = `price-${id}`;
+                productDivs[i].querySelector('button').setAttribute('onclick', `removeProduct(${id})`);
+                productDivs[i].querySelector('input').previousSibling.textContent = `商品${id} 价格: `;
+            }
         }
 
         function calculate() {
