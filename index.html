@@ -1,172 +1,81 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>折扣计算器</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f8f8f8;
-            margin: 0;
-            padding: 20px;
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        #products, #results {
-            max-width: 600px;
-            margin: 20px auto;
-            background-color: #fff;
-            padding: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-        }
-        .product-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .product-item input {
-            margin-left: 10px;
-            padding: 5px;
-            width: 100px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        .product-item button {
-            margin-left: 10px;
-            padding: 5px 10px;
-            border: none;
-            background-color: #e74c3c;
-            color: #fff;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button.add, button.calculate {
-            display: block;
-            width: calc(100% - 40px);
-            max-width: 600px;
-            margin: 10px auto;
-            padding: 10px;
-            border: none;
-            background-color: #2ecc71;
-            color: #fff;
-            font-size: 16px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button.calculate {
-            background-color: #3498db;
-        }
-        #results {
-            font-size: 16px;
-        }
-        .discount-none {
-            color: #333;
-        }
-        .discount-70 {
-            color: #e67e22;
-            font-weight: bold;
-        }
-        .discount-60 {
-            color: #e74c3c;
-            font-weight: bold;
-        }
-        .discount-55 {
-            color: #c0392b;
-            font-weight: bold;
-            font-size: 18px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>折扣计算器</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <h1>折扣计算器</h1>
-    <div id="products"></div>
-    <button class="add" onclick="addProduct()">增加商品</button>
-    <button class="calculate" onclick="calculate()">计算</button>
-    <div id="results"></div>
+<body class="bg-gradient-to-r from-sky-100 to-indigo-100 min-h-screen py-10">
+  <div class="max-w-4xl mx-auto bg-white p-8 rounded-3xl shadow-2xl">
+    <h1 class="text-3xl font-extrabold text-center text-indigo-700 mb-6">🧮 折扣计算器</h1>
+    <div id="items" class="space-y-4"></div>
+    <div class="flex justify-center">
+      <button onclick="addItem()" class="mt-6 px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow">➕ 添加商品</button>
+    </div>
 
-    <script>
-        function addProduct() {
-            const productDivs = document.getElementsByClassName('product-item');
-            const productId = productDivs.length + 1;
-            const productDiv = document.createElement('div');
-            productDiv.classList.add('product-item');
-            productDiv.id = `product-${productId}`;
-            productDiv.innerHTML = `
-                商品${productId} 价格: <input type="number" id="price-${productId}" min="0" step="0.01"> 
-                <button onclick="removeProduct(${productId})">删除</button>
-            `;
-            document.getElementById('products').appendChild(productDiv);
-            updateProductNumbers();
-        }
+    <div class="mt-10 text-xl font-semibold text-center">
+      <p>折后总价：<span id="total" class="font-bold text-green-600">0</span> 元</p>
+      <p id="extra-discount" class="text-sm text-gray-500 mt-2"></p>
+      <p id="diff-to-discount" class="text-sm text-red-500 mt-1"></p>
+    </div>
+  </div>
 
-        function removeProduct(id) {
-            const productDiv = document.getElementById(`product-${id}`);
-            document.getElementById('products').removeChild(productDiv);
-            updateProductNumbers();
-        }
+  <script>
+    let itemId = 0;
 
-        function updateProductNumbers() {
-            const productDivs = document.getElementsByClassName('product-item');
-            for (let i = 0; i < productDivs.length; i++) {
-                const id = i + 1;
-                productDivs[i].id = `product-${id}`;
-                productDivs[i].querySelector('input').id = `price-${id}`;
-                productDivs[i].querySelector('button').setAttribute('onclick', `removeProduct(${id})`);
-                productDivs[i].querySelector('input').previousSibling.textContent = `商品${id} 价格: `;
-            }
-        }
+    function addItem() {
+      const container = document.createElement('div');
+      container.className = 'grid grid-cols-1 md:grid-cols-4 gap-4 items-center bg-gray-50 border border-gray-200 rounded-xl p-4 shadow';
+      container.id = `item-${itemId}`;
+      container.innerHTML = `
+        <input type="number" placeholder="原价 (元)" class="border border-gray-300 rounded p-2 w-full" oninput="calculateTotal()">
+        <select class="border border-gray-300 rounded p-2 w-full" onchange="calculateTotal()">
+          <option value="0.55">55 折</option>
+          <option value="0.6">6 折</option>
+          <option value="0.75">75 折</option>
+        </select>
+        <div class="text-gray-600">折后：<span class="discounted font-bold">0</span> 元</div>
+        <button onclick="removeItem(${itemId})" class="text-red-500 hover:text-red-700 font-semibold">🗑️ 删除</button>
+      `;
+      document.getElementById('items').appendChild(container);
+      itemId++;
+    }
 
-        function calculate() {
-            const productDivs = document.getElementsByClassName('product-item');
-            let originalTotal = 0;
-            const prices = [];
+    function removeItem(id) {
+      document.getElementById(`item-${id}`).remove();
+      calculateTotal();
+    }
 
-            for (let i = 0; i < productDivs.length; i++) {
-                const id = productDivs[i].id.split('-')[1];
-                const price = parseFloat(document.getElementById(`price-${id}`).value);
+    function calculateTotal() {
+      const items = document.querySelectorAll('#items > div');
+      let total = 0;
+      items.forEach(item => {
+        const price = parseFloat(item.querySelector('input').value) || 0;
+        const discount = parseFloat(item.querySelector('select').value);
+        const discountedPrice = price * discount;
+        item.querySelector('.discounted').innerText = discountedPrice.toFixed(2);
+        total += discountedPrice;
+      });
 
-                if (!isNaN(price)) {
-                    originalTotal += price;
-                    prices.push(price);
-                }
-            }
+      const totalDisplay = document.getElementById('total');
+      const extraDiscountDisplay = document.getElementById('extra-discount');
+      const diffToDiscountDisplay = document.getElementById('diff-to-discount');
 
-            let discount = 1;
-            let discountClass = 'discount-none';
-            let discountText = '无折扣';
-            if (prices.length == 2) {
-                discount = 0.7;
-                discountText = '七折';
-                discountClass = 'discount-70';
-            } else if (prices.length == 3) {
-                discount = 0.6;
-                discountText = '六折';
-                discountClass = 'discount-60';
-            } else if (prices.length >= 4) {
-                discount = 0.55;
-                discountText = '五五折';
-                discountClass = 'discount-55';
-            }
+      if (total > 988) {
+        const discountedTotal = total * 0.9;
+        totalDisplay.innerText = discountedTotal.toFixed(2);
+        extraDiscountDisplay.innerText = `🎉 满 988 元，已额外享受 9 折优惠（原折后价：${total.toFixed(2)} 元）`;
+        diffToDiscountDisplay.innerText = '';
+      } else {
+        totalDisplay.innerText = total.toFixed(2);
+        extraDiscountDisplay.innerText = '';
+        const diff = (988 - total).toFixed(2);
+        diffToDiscountDisplay.innerText = `📢 再消费 ${diff} 元即可享额外 9 折优惠！`;
+      }
+    }
 
-            const discountedPrices = prices.map(price => price * discount);
-            const discountedTotal = discountedPrices.reduce((sum, price) => sum + price, 0);
-
-            let resultHTML = `
-                商品原价: ${originalTotal.toFixed(2)}<br>
-                折后总价: ${discountedTotal.toFixed(2)}<br>
-                当前折扣: <span class="${discountClass}">${discountText}</span><br>
-                每件商品折后价格:<br>
-            `;
-            discountedPrices.forEach((price, index) => {
-                resultHTML += `商品${index + 1}: ${price.toFixed(2)}<br>`;
-            });
-
-            document.getElementById('results').innerHTML = resultHTML;
-        }
-    </script>
+    window.onload = () => addItem();
+  </script>
 </body>
 </html>
